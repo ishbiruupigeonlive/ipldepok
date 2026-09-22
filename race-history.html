@@ -1,0 +1,21 @@
+<input id="searchRing" placeholder="Cari Ring Number">
+<button onclick="loadHistory()">Cari</button>
+
+<table id="historyTable"><thead><tr><th>Race ID</th><th>Waktu Masuk</th><th>Kecepatan</th></tr></thead><tbody></tbody></table>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbzM0l5CSIXmguSC2xifWuoV40pSxB8E0spVzM7iwzD57A0j08kuMVyzy-lmm6lAt_lQKg/exec";
+
+async function loadHistory() {
+  const ring = document.getElementById("searchRing").value;
+  const res = await fetch(`${API}?sheet=RaceResults`);
+  const rows = await res.json();
+  const tbody = document.querySelector("#historyTable tbody");
+  tbody.innerHTML = "";
+  rows.slice(1)
+    .filter(r => r[1] == ring)
+    .forEach(r => {
+      tbody.innerHTML += `<tr><td>${r[0]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
+    });
+}
+</script>
