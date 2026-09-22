@@ -1,0 +1,16 @@
+<select id="sheetSelect">
+  <option value="Pigeons">Pigeons</option>
+  <option value="Health">Health</option>
+  <option value="RaceResults">Race Results</option>
+  <option value="Members">Members</option>
+</select>
+<button onclick="exportCSV()">Export CSV</button>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbzM0l5CSIXmguSC2xifWuoV40pSxB8E0spVzM7iwzD57A0j08kuMVyzy-lmm6lAt_lQKg/exec";
+
+function exportCSV() {
+  const sheet = document.getElementById("sheetSelect").value;
+  window.open(`${API}?action=export&sheet=${sheet}`, "_blank");
+}
+</script>
