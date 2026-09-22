@@ -1,0 +1,33 @@
+<form id="healthForm">
+  <input name="ringNumber" placeholder="Ring Number" required>
+  <input name="date" type="date" required>
+  <input name="note" placeholder="Catatan Kesehatan" required>
+  <input name="vaccineType" placeholder="Jenis Vaksin (opsional)">
+  <button type="submit">Simpan</button>
+</form>
+
+<table id="healthTable"><thead><tr><th>Ring</th><th>Tanggal</th><th>Catatan</th><th>Vaksin</th></tr></thead><tbody></tbody></table>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbzM0l5CSIXmguSC2xifWuoV40pSxB8E0spVzM7iwzD57A0j08kuMVyzy-lmm6lAt_lQKg/exec";
+
+document.getElementById("healthForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target));
+  data.action = "addHealth";
+  await fetch(API, {method:"POST", body: JSON.stringify(data)});
+  alert("Data kesehatan tersimpan!");
+  loadHealth();
+};
+
+async function loadHealth() {
+  const res = await fetch(`${API}?sheet=Health`);
+  const rows = await res.json();
+  const tbody = document.querySelector("#healthTable tbody");
+  tbody.innerHTML = "";
+  rows.slice(1).forEach(r => {
+    tbody.innerHTML += `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
+  });
+}
+loadHealth();
+</script>
