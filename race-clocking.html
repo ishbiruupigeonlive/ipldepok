@@ -1,0 +1,16 @@
+<form id="raceForm">
+  <input name="raceId" placeholder="Race ID" required>
+  <input name="ringNumber" placeholder="Ring Number" required>
+  <input name="releaseTime" type="datetime-local" required>
+  <input name="timeIn" type="datetime-local" required>
+  <input name="distance" placeholder="Jarak (meter)" required>
+  <button type="submit">Simpan</button>
+</form>
+<script>
+document.getElementById("raceForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target));
+  await fetch("https://script.google.com/macros/s/AKfycbzM0l5CSIXmguSC2xifWuoV40pSxB8E0spVzM7iwzD57A0j08kuMVyzy-lmm6lAt_lQKg/exec", {method:"POST", body: JSON.stringify(data)});
+  alert("Data tersimpan!");
+};
+</script>
