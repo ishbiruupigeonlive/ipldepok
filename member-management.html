@@ -1,0 +1,33 @@
+<form id="memberForm">
+  <input name="memberId" placeholder="Member ID" required>
+  <input name="name" placeholder="Nama Anggota" required>
+  <input name="contact" placeholder="Kontak" required>
+  <input name="clubName" placeholder="Nama Klub" required>
+  <button type="submit">Simpan</button>
+</form>
+
+<table id="memberTable"><thead><tr><th>ID</th><th>Nama</th><th>Kontak</th><th>Klub</th></tr></thead><tbody></tbody></table>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbzM0l5CSIXmguSC2xifWuoV40pSxB8E0spVzM7iwzD57A0j08kuMVyzy-lmm6lAt_lQKg/exec";
+
+document.getElementById("memberForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target));
+  data.action = "addMember";
+  await fetch(API, {method:"POST", body: JSON.stringify(data)});
+  alert("Anggota tersimpan!");
+  loadMembers();
+};
+
+async function loadMembers() {
+  const res = await fetch(`${API}?sheet=Members`);
+  const rows = await res.json();
+  const tbody = document.querySelector("#memberTable tbody");
+  tbody.innerHTML = "";
+  rows.slice(1).forEach(r => {
+    tbody.innerHTML += `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
+  });
+}
+loadMembers();
+</script>
