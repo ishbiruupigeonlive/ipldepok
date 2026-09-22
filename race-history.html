@@ -1,21 +1,61 @@
-<input id="searchRing" placeholder="Cari Ring Number">
-<button onclick="loadHistory()">Cari</button>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Race History - Ishbiruu Pigeon</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="navbar">
+    <h1>📊 Race History</h1>
+    <a href="index.html" class="back-link">← Kembali</a>
+  </div>
+  <div class="container">
+    <div class="card">
+      <div class="search-bar">
+        <input id="searchRing" placeholder="Cari berdasarkan Ring Number">
+        <button onclick="loadHistory()">Cari</button>
+      </div>
+      <div id="tableWrap">
+        <div class="empty-state">Masukkan Ring Number untuk melihat riwayat lomba.</div>
+      </div>
+    </div>
+  </div>
 
-<table id="historyTable"><thead><tr><th>Race ID</th><th>Waktu Masuk</th><th>Kecepatan</th></tr></thead><tbody></tbody></table>
+  <script>
+    const API = "https://script.google.com/macros/s/AKfycbzM0l5CSIXmguSC2xifWuoV40pSxB8E0spVzM7iwzD57A0j08kuMVyzy-lmm6lAt_lQKg/exec";
+    const tableWrap = document.getElementById("tableWrap");
 
-<script>
-const API = "https://script.google.com/macros/s/AKfycbzM0l5CSIXmguSC2xifWuoV40pSxB8E0spVzM7iwzD57A0j08kuMVyzy-lmm6lAt_lQKg/exec";
+    async function loadHistory() {
+      const ring = document.getElementById("searchRing").value.trim();
+      if (!ring) {
+        tableWrap.innerHTML = `<div class="empty-state">Masukkan Ring Number terlebih dahulu.</div>`;
+        return;
+      }
 
-async function loadHistory() {
-  const ring = document.getElementById("searchRing").value;
-  const res = await fetch(`${API}?sheet=RaceResults`);
-  const rows = await res.json();
-  const tbody = document.querySelector("#historyTable tbody");
-  tbody.innerHTML = "";
-  rows.slice(1)
-    .filter(r => r[1] == ring)
-    .forEach(r => {
-      tbody.innerHTML += `<tr><td>${r[0]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
-    });
-}
-</script>
+      tableWrap.innerHTML = `<div class="empty-state"><span class="spinner"></span> Mencari data...</div>`;
+
+      try {
+        const res = await fetch(`${API}?sheet=RaceResults`);
+        const rows = await res.json();
+        const data = rows.slice(1).filter(r => r[1] == ring);
+
+        if (data.length === 0) {
+          tableWrap.innerHTML = `<div class="empty-state">Tidak ada riwayat untuk Ring Number "${ring}".</div>`;
+          return;
+        }
+
+        let html = `<table><thead><tr><th>Race ID</th><th>Waktu Masuk</th><th>Kecepatan (m/menit)</th></tr></thead><tbody>`;
+        data.forEach(r => {
+          html += `<tr><td>${r[0]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
+        });
+        html += `</tbody></table>`;
+        tableWrap.innerHTML = html;
+      } catch (err) {
+        tableWrap.innerHTML = `<div class="empty-state">Gagal memuat data. <a href="javascript:loadHistory()">Coba lagi</a></div>`;
+      }
+    }
+  </script>
+</body>
+</html>
