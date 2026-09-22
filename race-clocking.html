@@ -1,16 +1,75 @@
-<form id="raceForm">
-  <input name="raceId" placeholder="Race ID" required>
-  <input name="ringNumber" placeholder="Ring Number" required>
-  <input name="releaseTime" type="datetime-local" required>
-  <input name="timeIn" type="datetime-local" required>
-  <input name="distance" placeholder="Jarak (meter)" required>
-  <button type="submit">Simpan</button>
-</form>
-<script>
-document.getElementById("raceForm").onsubmit = async (e) => {
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(e.target));
-  await fetch("https://script.google.com/macros/s/AKfycbzM0l5CSIXmguSC2xifWuoV40pSxB8E0spVzM7iwzD57A0j08kuMVyzy-lmm6lAt_lQKg/exec", {method:"POST", body: JSON.stringify(data)});
-  alert("Data tersimpan!");
-};
-</script>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Race Clocking - Ishbiruu Pigeon</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="navbar">
+    <h1>⏱️ Race Clocking</h1>
+    <a href="index.html" class="back-link">← Kembali</a>
+  </div>
+  <div class="container">
+    <div class="card">
+      <div id="statusMsg" class="status-msg"></div>
+      <form id="raceForm">
+        <label>Race ID</label>
+        <input name="raceId" placeholder="Contoh: RC001" required>
+
+        <label>Ring Number</label>
+        <input name="ringNumber" placeholder="Contoh: ID-2024-001" required>
+
+        <label>Waktu Rilis</label>
+        <input name="releaseTime" type="datetime-local" required>
+
+        <label>Waktu Masuk</label>
+        <input name="timeIn" type="datetime-local" required>
+
+        <label>Jarak (meter)</label>
+        <input name="distance" type="number" placeholder="Contoh: 150000" required>
+
+        <button type="submit" id="submitBtn">Simpan Data</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API = "https://script.google.com/macros/s/AKfycbzM0l5CSIXmguSC2xifWuoV40pSxB8E0spVzM7iwzD57A0j08kuMVyzy-lmm6lAt_lQKg/exec"; // ganti dengan URL Web App kamu
+    const form = document.getElementById("raceForm");
+    const statusMsg = document.getElementById("statusMsg");
+    const submitBtn = document.getElementById("submitBtn");
+
+    function showStatus(type, message) {
+      statusMsg.className = `status-msg ${type}`;
+      statusMsg.innerHTML = type === "loading" ? `<span class="spinner"></span>${message}` : message;
+    }
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form));
+      data.action = "addRace";
+
+      // Validasi urutan waktu
+      if (new Date(data.timeIn) <= new Date(data.releaseTime)) {
+        showStatus("error", "⚠️ Waktu masuk harus setelah waktu rilis.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      showStatus("loading", "Menyimpan data...");
+
+      try {
+        await fetch(API, { method: "POST", body: JSON.stringify(data) });
+        showStatus("success", "✅ Data berhasil disimpan!");
+        form.reset();
+      } catch (err) {
+        showStatus("error", "❌ Gagal menyimpan data. Coba lagi.");
+      } finally {
+        submitBtn.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>
