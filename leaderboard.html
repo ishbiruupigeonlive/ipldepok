@@ -1,0 +1,27 @@
+<div class="navbar"><h1>🏆 Live Leaderboard</h1><a href="index.html" class="back-link">← Kembali</a></div>
+<div class="container">
+  <div class="card">
+    <select id="raceSelect" onchange="loadBoard()"></select>
+    <div id="tableWrap" style="margin-top:16px;"></div>
+  </div>
+</div>
+<script>
+const API = "https://script.google.com/macros/s/AKfycbzM0l5CSIXmguSC2xifWuoV40pSxB8E0spVzM7iwzD57A0j08kuMVyzy-lmm6lAt_lQKg/exec";
+async function loadRaceOptions() {
+  const res = await fetch(`${API}?sheet=Races`);
+  const rows = (await res.json()).slice(1);
+  document.getElementById("raceSelect").innerHTML = rows.map(r=>`<option value="${r[0]}">${r[1]}</option>`).join("");
+  loadBoard();
+}
+async function loadBoard() {
+  const raceId = document.getElementById("raceSelect").value;
+  const res = await fetch(`${API}?sheet=RaceResults`);
+  const rows = (await res.json()).slice(1).filter(r=>r[0]==raceId).sort((a,b)=>b[3]-a[3]);
+  document.getElementById("tableWrap").innerHTML = rows.length ?
+    `<table><thead><tr><th>Rank</th><th>Ring</th><th>Waktu Masuk</th><th>Kecepatan</th></tr></thead><tbody>${
+      rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join("")
+    }</tbody></table>` : `<div class="empty-state">Belum ada hasil masuk.</div>`;
+}
+loadRaceOptions();
+setInterval(loadBoard, 10000); // auto-refresh tiap 10 detik
+</script>
