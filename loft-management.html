@@ -1,35 +1,108 @@
-<form id="pigeonForm">
-  <input name="ringNumber" placeholder="Ring Number" required>
-  <input name="name" placeholder="Nama Merpati" required>
-  <select name="gender"><option>Jantan</option><option>Betina</option></select>
-  <input name="birthDate" type="date" required>
-  <input name="pedigree" placeholder="Pedigree/Keturunan">
-  <input name="ownerId" placeholder="Owner ID" required>
-  <button type="submit">Simpan</button>
-</form>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loft Management - Ishbiruu Pigeon</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="navbar">
+    <h1>🏠 Loft Management</h1>
+    <a href="index.html" class="back-link">← Kembali</a>
+  </div>
+  <div class="container">
+    <div class="card">
+      <div id="statusMsg" class="status-msg"></div>
+      <form id="pigeonForm">
+        <label>Ring Number</label>
+        <input name="ringNumber" placeholder="Contoh: ID-2024-001" required>
 
-<table id="pigeonTable"><thead><tr><th>Ring</th><th>Nama</th><th>Gender</th><th>Lahir</th><th>Pedigree</th></tr></thead><tbody></tbody></table>
+        <label>Nama Merpati</label>
+        <input name="name" placeholder="Nama merpati" required>
 
-<script>
-const API = "https://script.google.com/macros/s/AKfycbzM0l5CSIXmguSC2xifWuoV40pSxB8E0spVzM7iwzD57A0j08kuMVyzy-lmm6lAt_lQKg/exec";
+        <label>Jenis Kelamin</label>
+        <select name="gender" required>
+          <option value="">Pilih</option>
+          <option value="Jantan">Jantan</option>
+          <option value="Betina">Betina</option>
+        </select>
 
-document.getElementById("pigeonForm").onsubmit = async (e) => {
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(e.target));
-  data.action = "addPigeon";
-  await fetch(API, {method:"POST", body: JSON.stringify(data)});
-  alert("Merpati tersimpan!");
-  loadPigeons();
-};
+        <label>Tanggal Lahir</label>
+        <input name="birthDate" type="date" required>
 
-async function loadPigeons() {
-  const res = await fetch(`${API}?sheet=Pigeons`);
-  const rows = await res.json();
-  const tbody = document.querySelector("#pigeonTable tbody");
-  tbody.innerHTML = "";
-  rows.slice(1).forEach(r => {
-    tbody.innerHTML += `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`;
-  });
-}
-loadPigeons();
-</script>
+        <label>Pedigree/Keturunan</label>
+        <input name="pedigree" placeholder="Opsional">
+
+        <label>Owner ID</label>
+        <input name="ownerId" placeholder="ID pemilik" required>
+
+        <button type="submit" id="submitBtn">Simpan Merpati</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:16px;">Daftar Merpati</h3>
+      <div id="tableWrap">
+        <div class="empty-state"><span class="spinner"></span> Memuat data...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = "https://script.google.com/macros/s/AKfycbzM0l5CSIXmguSC2xifWuoV40pSxB8E0spVzM7iwzD57A0j08kuMVyzy-lmm6lAt_lQKg/exec"; // ganti dengan URL Web App kamu
+    const form = document.getElementById("pigeonForm");
+    const statusMsg = document.getElementById("statusMsg");
+    const submitBtn = document.getElementById("submitBtn");
+    const tableWrap = document.getElementById("tableWrap");
+
+    function showStatus(type, message) {
+      statusMsg.className = `status-msg ${type}`;
+      statusMsg.innerHTML = type === "loading" ? `<span class="spinner"></span>${message}` : message;
+    }
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form));
+      data.action = "addPigeon";
+
+      submitBtn.disabled = true;
+      showStatus("loading", "Menyimpan data...");
+
+      try {
+        await fetch(API, { method: "POST", body: JSON.stringify(data) });
+        showStatus("success", "✅ Merpati berhasil disimpan!");
+        form.reset();
+        loadPigeons();
+      } catch (err) {
+        showStatus("error", "❌ Gagal menyimpan data. Coba lagi.");
+      } finally {
+        submitBtn.disabled = false;
+      }
+    };
+
+    async function loadPigeons() {
+      try {
+        const res = await fetch(`${API}?sheet=Pigeons`);
+        const rows = await res.json();
+        const data = rows.slice(1);
+
+        if (data.length === 0) {
+          tableWrap.innerHTML = `<div class="empty-state">Belum ada data merpati.</div>`;
+          return;
+        }
+
+        let html = `<table><thead><tr><th>Ring</th><th>Nama</th><th>Gender</th><th>Lahir</th><th>Pedigree</th></tr></thead><tbody>`;
+        data.forEach(r => {
+          html += `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4] || '-'}</td></tr>`;
+        });
+        html += `</tbody></table>`;
+        tableWrap.innerHTML = html;
+      } catch (err) {
+        tableWrap.innerHTML = `<div class="empty-state">Gagal memuat data. <a href="javascript:loadPigeons()">Coba lagi</a></div>`;
+      }
+    }
+    loadPigeons();
+  </script>
+</body>
+</html>
